@@ -1,0 +1,1 @@
+To publish package run `bash publish-nuget-package.sh {{new version}} {{nuget api key}}`
