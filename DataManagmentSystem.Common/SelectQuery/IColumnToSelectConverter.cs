@@ -9,5 +9,7 @@
         Expression<Func<TEntity, TEntity>> Convert<TEntity, TQueryRecordsRestrictionAttribute>(SelectColumn columns, bool canSkipLocalization = false, bool isColumnReadingRestricted = true, bool ignoreDeletedRecords = true)
             where TEntity : BaseEntity, new()
             where TQueryRecordsRestrictionAttribute : BaseQueryRecordsRestrictionAttribute;
+        Expression GetMemeberInit<TQueryRecordsRestrictionAttribute>(SelectColumn columns, Expression parameter, Type type, bool isColumnReadingRestricted, bool ignoreDeletedRecords)
+            where TQueryRecordsRestrictionAttribute : BaseQueryRecordsRestrictionAttribute;
     }
 }
