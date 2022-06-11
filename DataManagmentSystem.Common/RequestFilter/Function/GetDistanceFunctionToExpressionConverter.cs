@@ -13,13 +13,15 @@ using System.Reflection;
 namespace DataManagmentSystem.Common.RequestFilter.Function
 {
     public class GetDistanceFunctionToExpressionConverter : IFunctionToExpressionConverter {
+        private readonly FilterIterator _iterator;
 
         protected IPropertyCache PropertyCache { get; }
 
         public SupportedFunction Function => SupportedFunction.GET_DISTANCE;
 
-        public GetDistanceFunctionToExpressionConverter(IPropertyCache propertyCache) {
+        public GetDistanceFunctionToExpressionConverter(IPropertyCache propertyCache, FilterIterator iterator) {
             PropertyCache = propertyCache;
+            _iterator = iterator;
         }
 
         public MethodCallExpression Convert(IEnumerable<FunctionParameter> parameters, ParameterExpression parameter, Type type) {
@@ -36,28 +38,7 @@ namespace DataManagmentSystem.Common.RequestFilter.Function
             if (parameter.IsPredefined) {
                 return Expression.Constant(System.Convert.ToDecimal(parameter.Value), typeof(decimal));
             }
-            var columnPathChain = parameter.ColumnPath.Split(BaseFilterToExpressionConverter.SEPARATOR);
-            var currentPropertyExpression = parameterExpression as Expression;
-            var propertyType = type;
-            foreach (var propertyName in columnPathChain) {
-                var property = PropertyCache.GetPropertyByName(propertyType, propertyName);
-                propertyType = property.PropertyType;
-                if (property.IsDefined(typeof(MapToExpressionAttribute), true)) {
-                    var lambdaMethodName = property.GetCustomAttribute<MapToExpressionAttribute>()
-                        ?.ExpressionMethodName;
-                    if (property.ReflectedType.GetMethod(lambdaMethodName)
-                        ?.Invoke(null, Array.Empty<object>()) is not LambdaExpression lambdaBindedToProperty)
-                    {
-                        throw new ArgumentException($"Wrong expression descriptor for property {property.Name}");
-                    }
-                    currentPropertyExpression = lambdaBindedToProperty.Body.ReplaceParameter(lambdaBindedToProperty.Parameters.Single(), currentPropertyExpression);
-                } else {
-                    currentPropertyExpression = Expression.Property(currentPropertyExpression, property);
-                }
-                if (typeof(IEnumerable).IsAssignableFrom(propertyType) && propertyType.GenericTypeArguments.Any()) {
-                    throw new InvalidOperationException("Impossible to use collection inside function call. Try to use exists filter.");
-                }
-            }
+            (Expression currentPropertyExpression, _, _) = _iterator.Iterate(parameter.ColumnPath, parameterExpression, type, (_, _, _, _, _) => throw new InvalidOperationException());
             return Expression.Convert(currentPropertyExpression, typeof(decimal));
         }
     }

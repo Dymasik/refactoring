@@ -36,24 +36,16 @@
 		protected IColumnToSelectConverter SelectColumnConverter { get; }
 		public IFilterToExpressionConverter FilterConverter { get; }
 
-		public BaseRepository(TContext context,
-			IObjectLocalizer localizer,
-			ILocalizationEntityResolver localizeResolver,
-			IUserDataAccessor userDataAccessor,
-			IEmailService<MimeMessage> emailService,
-			ReportService reportService,
-			IColumnToSelectConverter selectColumnConverter,
-			IFilterToExpressionConverter filterConverter,
-			IMediator mediator) {
-			_context = context;
-			Localizer = localizer;
-			LocalizeResolver = localizeResolver;
-			_userDataAccessor = userDataAccessor;
-			EmailService = emailService;
-			ReportService = reportService;
-			SelectColumnConverter = selectColumnConverter;
-			FilterConverter = filterConverter;
-			_mediator = mediator;
+		public BaseRepository(RepositoryInjector<TContext> injector) {
+			_context = injector.Context;
+			Localizer = injector.Localizer;
+			LocalizeResolver = injector.LocalizeResolver;
+			_userDataAccessor = injector.UserDataAccessor;
+			EmailService = injector.EmailService;
+			ReportService = injector.ReportService;
+			SelectColumnConverter = injector.SelectColumnConverter;
+			FilterConverter = injector.FilterConverter;
+			_mediator = injector.Mediator;
 		}
 
 		public async Task<TEntity> AddEntity(TEntity entity) {

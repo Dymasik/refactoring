@@ -6,10 +6,17 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IsPackable>true</IsPackable>
         <Version>2.1.4</Version>
+        <CodeAnalysisRuleSet>..\.sonarlint\commoncsharp.ruleset</CodeAnalysisRuleSet>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <PlatformTarget>AnyCPU</PlatformTarget>
     </PropertyGroup>
+    <ItemGroup>
+      <AdditionalFiles Include="..\.sonarlint\common\CSharp\SonarLint.xml" Link="SonarLint.xml" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="..\.editorconfig" Link=".editorconfig" />
+    </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="DataManagementSystem.EmailService" Version="1.1.4" />
 		<PackageReference Include="DataManagementSystem.ReportService" Version="1.0.0" />

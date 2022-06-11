@@ -5,6 +5,7 @@
     using DataManagmentSystem.Common.Locale;
     using DataManagmentSystem.Common.Macros;
     using DataManagmentSystem.Common.PropertyCache;
+    using DataManagmentSystem.Common.RequestFilter;
     using DataManagmentSystem.Common.RequestFilter.CustomFilters;
     using DataManagmentSystem.Common.RequestFilter.Function;
     using DataManagmentSystem.Common.SelectQuery;
@@ -18,6 +19,7 @@
     public class BaseFilterToExpressionConverter : IFilterToExpressionConverter {
 
         private bool _canSkipLocalization;
+        private readonly FilterIterator _iterator;
         private readonly IEnumerable<IMacrosValueProvider> _macrosValueProviders;
         private readonly IEnumerable<IFunctionToExpressionConverter> _functionToExpressionConverters;
         private readonly IEnumerable<IFilterExpressionBuilder> _filterBuilders;
@@ -29,11 +31,13 @@
 
         public BaseFilterToExpressionConverter(IPropertyCache propertyCache,
             IObjectLocalizer localizer,
+            FilterIterator iterator,
             IEnumerable<IMacrosValueProvider> macrosValueProviders,
             IEnumerable<IFunctionToExpressionConverter> functionToExpressionConverters,
             IEnumerable<IFilterExpressionBuilder> filterBuilders)
         {
             PropertyCache = propertyCache;
+            _iterator = iterator;
             CurrentLanguageCode = localizer.GetCulture().TwoLetterISOLanguageName;
             _macrosValueProviders = macrosValueProviders;
             _functionToExpressionConverters = functionToExpressionConverters;
@@ -61,40 +65,21 @@
             var propertyType = type;
             Expression primitiveExpression = null;
             if (filter.Function != null) {
-                var converter = GetFunctionToExpressionConverter(filter.Function.Operation);
-                var functionCallExpression = converter.Convert(filter.Function.Parameters, parameter, type);
-                propertyType = functionCallExpression.Method.ReturnType;
-                currentPropertyExpression = functionCallExpression;
+                (currentPropertyExpression, propertyType) = ConvertFunction(filter, parameter, type);
             } else {
-                var columnPathChain = filter.ColumnPath.Split(SEPARATOR);
-                PropertyInfo property = null;
-                foreach (var propertyName in columnPathChain) {
-                    property = PropertyCache.GetPropertyByName(propertyType, propertyName);
-                    propertyType = property.PropertyType;
-                    if (property.IsDefined(typeof(MapToExpressionAttribute), true)) {
-                        var lambdaMethodName = property.GetCustomAttribute<MapToExpressionAttribute>()
-                            ?.ExpressionMethodName;
-                        if (property.ReflectedType.GetMethod(lambdaMethodName)
-                            ?.Invoke(null, Array.Empty<object>()) is not LambdaExpression lambdaBindedToProperty)
-                        {
-                            throw new ArgumentException($"Wrong expression descriptor for property {property.Name}");
-                        }
-                        currentPropertyExpression = lambdaBindedToProperty.Body.ReplaceParameter(lambdaBindedToProperty.Parameters.Single(), currentPropertyExpression);
-                    } else {
-                        currentPropertyExpression = Expression.Property(currentPropertyExpression, property);
-                    }
-                    if (typeof(IEnumerable).IsAssignableFrom(propertyType) && propertyType.GenericTypeArguments.Any()) {
-                        var enumType = propertyType.GenericTypeArguments.First();
-                        var anyExpression = GetEnumerableAnyExpression(currentPropertyExpression, enumType, new RequestFilterExpression {
-                            ColumnPath = filter.ColumnPath.Split(propertyName + SEPARATOR).Last(),
-                            Value = filter.Value,
-                            SubFilter = filter.SubFilter,
-                            ComparisonType = filter.ComparisonType
-                        }, useLocalization);
-                        return anyExpression;
-                    }
-                }
-                if ((property?.IsDefined(typeof(LocalizedAttribute), true) ?? false) && !_canSkipLocalization) {
+                (currentPropertyExpression, PropertyInfo property, bool isFinish) = _iterator.Iterate(filter.ColumnPath, parameter, type, (name, typeOfProperty, propertyExp, useLocale, filter) =>
+                {
+                    var enumType = typeOfProperty.GenericTypeArguments.First();
+                    var anyExpression = GetEnumerableAnyExpression(propertyExp, enumType, new RequestFilterExpression
+                    {
+                        ColumnPath = filter.ColumnPath.Split(name + SEPARATOR).Last(),
+                        Value = filter.Value,
+                        SubFilter = filter.SubFilter,
+                        ComparisonType = filter.ComparisonType
+                    }, useLocale);
+                    return anyExpression;
+                }, useLocalization, filter);
+                if (!isFinish && (property?.IsDefined(typeof(LocalizedAttribute), true) ?? false) && !_canSkipLocalization) {
                     return ConvertNodeExpressionToExpression(new RequestFilterExpression {
                         ColumnPath = $"{filter.ColumnPath.Split(property.Name).First()}{LOCALIZATIONS_PROP_NAME}.{property.Name}",
                         Value = filter.Value,
@@ -151,6 +136,13 @@
                 typedValue = System.Convert.ChangeType(value, type);
             }
             return typedValue;
+        }
+
+        private (Expression currentPropertyExpression, Type propertyType) ConvertFunction(RequestFilterExpression filter, ParameterExpression parameter, Type type)
+        {
+            var converter = GetFunctionToExpressionConverter(filter.Function.Operation);
+            var functionCallExpression = converter.Convert(filter.Function.Parameters, parameter, type);
+            return (functionCallExpression, functionCallExpression.Method.ReturnType);
         }
 
         private Expression GetEnumerableAnyExpression(Expression propertyExpression, Type type, RequestFilterExpression requestFilterExpression, bool useLocalization) {

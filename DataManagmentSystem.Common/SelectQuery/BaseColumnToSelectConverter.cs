@@ -170,18 +170,36 @@
                     } else {
                         memberInitParameter = currentPropertyParameter;
                     }
-                    var memberInit = GetMemeberInit<TQueryRecordsRestrictionAttribute>(relatedColumn,
-                        memberInitParameter, memberType, isColumnReadingRestricted, ignoreDeletedRecords);
-                    var restrictionExpression = GetRestrictionExpression<TQueryRecordsRestrictionAttribute>(isEnumerationProperty ? typeParameter.Type : currentPropertyParameter.Type);
-                    var assigningExpression = isEnumerationProperty ? GetEnumerableAssigningExpression(typeParameter, memberInit, currentPropertyParameter, restrictionExpression, ignoreDeletedRecords)
-                        : GetReferenceEntityAssigningExpression(currentPropertyParameter, memberInit, restrictionExpression, ignoreDeletedRecords);
-                    assigningExpression = isColumnReadingRestricted
-                        ? GetRestrictedColumnExpression(assigningExpression, parameter, type, property)
-                        : assigningExpression;
-                    expressions.Add(property, assigningExpression);
+                    FillExpressions<TQueryRecordsRestrictionAttribute>(expressions, new MemberInfoDto { 
+                        RelatedColumn = relatedColumn,
+                        MemberInitParameter = memberInitParameter,
+                        MemberType = memberType,
+                        IsColumnReadingRestricted = isColumnReadingRestricted,
+                        IgnoreDeletedRecords = ignoreDeletedRecords,
+                        IsEnumerationProperty = isEnumerationProperty,
+                        TypeParameter = typeParameter,
+                        CurrentPropertyParameter = currentPropertyParameter,
+                        Parameter = parameter,
+                        Type = type,
+                        Property = property
+                    });
                 }
             }
             return expressions;
+        }
+
+        private void FillExpressions<TQueryRecordsRestrictionAttribute>(Dictionary<MemberInfo, Expression> expressions, MemberInfoDto info)
+            where TQueryRecordsRestrictionAttribute : BaseQueryRecordsRestrictionAttribute
+        {
+            var memberInit = GetMemeberInit<TQueryRecordsRestrictionAttribute>(info.RelatedColumn,
+                        info.MemberInitParameter, info.MemberType, info.IsColumnReadingRestricted, info.IgnoreDeletedRecords);
+            var restrictionExpression = GetRestrictionExpression<TQueryRecordsRestrictionAttribute>(info.IsEnumerationProperty ? info.TypeParameter.Type : info.CurrentPropertyParameter.Type);
+            var assigningExpression = info.IsEnumerationProperty ? GetEnumerableAssigningExpression(info.TypeParameter, memberInit, info.CurrentPropertyParameter, restrictionExpression, info.IgnoreDeletedRecords)
+                : GetReferenceEntityAssigningExpression(info.CurrentPropertyParameter, memberInit, restrictionExpression, info.IgnoreDeletedRecords);
+            assigningExpression = info.IsColumnReadingRestricted
+                ? GetRestrictedColumnExpression(assigningExpression, info.Parameter, info.Type, info.Property)
+                : assigningExpression;
+            expressions.Add(info.Property, assigningExpression);
         }
 
         private PropertyInfo GetLocalizationProperty(Type type)
@@ -308,6 +326,22 @@
         {
             var restrictorType = typeof(ColumnOperationRestrictor<,>).MakeGenericType(entityType, typeof(TColumnOperationRestrictionAttribute));
             return Activator.CreateInstance(restrictorType, _userDataAccessor, columnName);
+        }
+
+        private sealed class MemberInfoDto
+        {
+            public SelectRelatedColumn RelatedColumn { get; set; }
+            public Expression MemberInitParameter { get; set; }
+            public Type MemberType { get; set; }
+            public bool IsColumnReadingRestricted { get; set; }
+            public bool IgnoreDeletedRecords { get; set; }
+            public bool IsEnumerationProperty { get; set; }
+            public ParameterExpression TypeParameter { get; set; }
+            public Expression CurrentPropertyParameter { get; set; }
+            public Expression Parameter { get; set; }
+            public Type Type { get; set; }
+            public PropertyInfo Property { get; set; }
+
         }
     }
 }
