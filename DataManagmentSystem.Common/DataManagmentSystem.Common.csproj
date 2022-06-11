@@ -7,34 +7,19 @@
         <IsPackable>true</IsPackable>
         <Version>2.1.4</Version>
     </PropertyGroup>
-    <!-- 
-    <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <ProjectReference Include="..\..\DataManagementSystem.EmailService\DataManagementSystem.EmailService\DataManagementSystem.EmailService.csproj" />
-      <ProjectReference Include="..\..\DataManagementSystem.ReportService\DataManagementSystem.ReportService\DataManagementSystem.ReportService.csproj" />
-      <ProjectReference Include="..\..\DataManagmentSystem.Auth.Injector\DataManagmentSystem.Auth.Injector\DataManagmentSystem.Auth.Injector.csproj" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <PackageReference Include="DataManagmentSystem.Auth.Injector" Version="1.0.7" />
-      <PackageReference Include="DataManagementSystem.EmailService" Version="1.1.2" />
-      <PackageReference Include="DataManagementSystem.ReportService" Version="1.0.0" />
-    </ItemGroup>
-    -->
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <PlatformTarget>AnyCPU</PlatformTarget>
     </PropertyGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\..\DataManagementSystem.EmailService\DataManagementSystem.EmailService\DataManagementSystem.EmailService.csproj" />
-        <ProjectReference Include="..\..\DataManagementSystem.ReportService\DataManagementSystem.ReportService\DataManagementSystem.ReportService.csproj" />
-        <ProjectReference Include="..\..\DataManagmentSystem.Auth.Injector\DataManagmentSystem.Auth.Injector\DataManagmentSystem.Auth.Injector.csproj" />
-        <ProjectReference Include="..\..\DataManagmentSystem.Entity.Base\DataManagmentSystem.Entity.Base\DataManagmentSystem.Entity.Base.csproj" />
-        <ProjectReference Include="..\..\DataManagmentSystem.Entity.Messaging\DataManagmentSystem.Entity.Messaging\DataManagmentSystem.Entity.Messaging.csproj" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.1" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.1" />
-        <PackageReference Include="NodaTime" Version="3.0.5" />
-        <PackageReference Include="TimeZoneConverter" Version="3.3.0" />
-        <!-- Try to remove this in future publish -->
-        <!-- <PackageReference Include="MailKit" Version="2.15.0" /> -->
-    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="DataManagementSystem.EmailService" Version="1.1.4" />
+		<PackageReference Include="DataManagementSystem.ReportService" Version="1.0.0" />
+		<PackageReference Include="DataManagmentSystem.Auth.Injector" Version="1.1.8" />
+		<PackageReference Include="DataManagmentSystem.Entity.Base" Version="1.0.6" />
+		<PackageReference Include="DataManagmentSystem.Entity.Messaging" Version="1.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.1" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.1" />
+		<PackageReference Include="NodaTime" Version="3.0.5" />
+		<PackageReference Include="TimeZoneConverter" Version="3.3.0" />
+	</ItemGroup>
 </Project>
