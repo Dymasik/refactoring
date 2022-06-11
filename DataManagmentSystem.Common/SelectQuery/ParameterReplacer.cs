@@ -11,9 +11,9 @@
                         .Visit(expression);
         }
 
-        private class ParameterReplacerVisitor : ExpressionVisitor {
-            private Expression _source;
-            private Expression _target;
+        private sealed class ParameterReplacerVisitor : ExpressionVisitor {
+            private readonly Expression _source;
+            private readonly Expression _target;
 
             public ParameterReplacerVisitor
                     (Expression source, Expression target) {

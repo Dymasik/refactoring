@@ -13,7 +13,7 @@
 	public static class IQueryableWhereExtensions
 	{
 
-		public static async Task<IQueryable<TEntity>> Where<TEntity, TQueryRecordsRestrictionAttribute>(this IQueryable<TEntity> query, RequestFilter filter, IFilterToExpressionConverter converter, IUserDataAccessor userDataAccessor, bool canSkipLocalization, bool ignoreDeletedRecords)
+		public static IQueryable<TEntity> Where<TEntity, TQueryRecordsRestrictionAttribute>(this IQueryable<TEntity> query, RequestFilter filter, IFilterToExpressionConverter converter, IUserDataAccessor userDataAccessor, bool canSkipLocalization, bool ignoreDeletedRecords)
 			where TEntity : BaseEntity
 			where TQueryRecordsRestrictionAttribute : BaseQueryRecordsRestrictionAttribute
 		{

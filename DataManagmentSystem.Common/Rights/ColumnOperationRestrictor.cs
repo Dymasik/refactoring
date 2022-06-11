@@ -26,7 +26,7 @@ namespace DataManagmentSystem.Common.Rights
 			=> method.GetCustomAttributes<TColumnOperationRestrictionAttribute>(true)
 					.Where(attr => attr.ColumnName == _columnName);
 		
-        private string _columnName;
+        private readonly string _columnName;
 
 		public override LambdaExpression GetRightsRestrictionsExpression() {
 			LambdaExpression expression = null;

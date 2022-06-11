@@ -84,9 +84,11 @@
                 {
                     var propertyIncludedColumns = property.GetCustomAttribute<IncludeColumnsAttribute>()
                         ?.Columns;
-                    includedColumns = includedColumns != null && propertyIncludedColumns != null
-                        ? includedColumns.Concat(propertyIncludedColumns)
-                        : (includedColumns != null ? includedColumns : propertyIncludedColumns);
+                    if (includedColumns != null && propertyIncludedColumns != null) {
+                        includedColumns = includedColumns.Concat(propertyIncludedColumns);
+                    } else {
+                        includedColumns = includedColumns != null ? includedColumns : propertyIncludedColumns;
+                    }
                 }
             }
             return includedColumns;
@@ -96,22 +98,22 @@
             where TColumnOperationRestrictionAttribute : BaseColumnOperationRestrictionAttribute
         {
             IEnumerable<string> includedColumns = null;
-            foreach (var column in columns)
-            {
+            foreach (var column in columns) {
                 var rightsRestrictor = BuildColumnOperationRightsRestrictor<TColumnOperationRestrictionAttribute>(type, column);
-                if (!rightsRestrictor?.IsRestricted())
-                {
+                if (rightsRestrictor == null || !rightsRestrictor.IsRestricted()) {
                     continue;
                 }
                 var restrictionMethod = rightsRestrictor.GetRestrictionMethod() as MethodInfo;
                 var restrictionIncludedColumns = restrictionMethod
                     ?.GetCustomAttribute<IncludeColumnsAttribute>(true)
                     ?.Columns;
-                includedColumns = includedColumns != null && restrictionIncludedColumns != null
-                    ? includedColumns.Concat(restrictionIncludedColumns)
-                    : (includedColumns != null
+                if (includedColumns != null && restrictionIncludedColumns != null) {
+                    includedColumns = includedColumns.Concat(restrictionIncludedColumns);
+                } else {
+                    includedColumns = includedColumns != null
                         ? includedColumns
-                        : restrictionIncludedColumns);
+                        : restrictionIncludedColumns;
+                }
             }
             return includedColumns;
         }
@@ -187,11 +189,11 @@
         private PropertyInfo GetLocalizationProperty(Type type)
         {
             PropertyInfo property = null;
-            try
-            {
+            try {
                 property = PropertyCache.GetPropertyByName(type, LOCALIZATIONS_PROPERTY_NAME);
+            } catch {
+                return null;
             }
-            catch { }
             return property;
         }
 
@@ -199,7 +201,7 @@
         {
             if (property == null)
             {
-                throw new ArgumentException($"There is no column {property.Name} in object {property.DeclaringType}");
+                throw new ArgumentNullException(nameof(property));
             }
             return !property.IsCalculatedField();
         }
@@ -235,7 +237,6 @@
         {
             var nullExpression = Expression.Constant(null, memberParameter.Type);
             var condition = Expression.MakeBinary(ExpressionType.NotEqual, memberParameter, nullExpression);
-            //ToDo: add AndAlso IsDeleted = false
             if (restrictionExpression != null)
             {
                 var predicate = restrictionExpression.Body.ReplaceParameter(restrictionExpression.Parameters.Single(), memberParameter);
@@ -249,7 +250,6 @@
 
         private Expression GetNotDeletedRecordsExpression(Expression memberParameter)
         {
-            //ToDo: discuss how to simplify
             Expression<Func<BaseEntity, bool>> exp = entity => !entity.IsDeleted;
             return exp.Body.ReplaceParameter(exp.Parameters.Single(), memberParameter);
         }
@@ -282,8 +282,8 @@
             var rightsRestrictor = BuildColumnOperationRightsRestrictor<AllowReadingColumnAttribute>(type, propertyName);
             if (rightsRestrictor?.IsRestricted())
             {
-                var restrictionExpression = rightsRestrictor.GetRightsRestrictionsExpression() as LambdaExpression;
-                return restrictionExpression.Body.ReplaceParameter(restrictionExpression.Parameters.Single(), parameter);
+                var restrictionExpression = rightsRestrictor?.GetRightsRestrictionsExpression() as LambdaExpression;
+                return restrictionExpression?.Body?.ReplaceParameter(restrictionExpression.Parameters.Single(), parameter);
             }
             return null;
         }
@@ -294,7 +294,7 @@
             var restrictor = BuildQueryRecordsRightsRestrictor<TQueryRecordsRestrictionAttribute>(entityType);
             if (restrictor?.IsRestricted())
             {
-                return restrictor.GetRightsRestrictionsExpression() as LambdaExpression;
+                return restrictor?.GetRightsRestrictionsExpression() as LambdaExpression;
             }
             return null;
         }

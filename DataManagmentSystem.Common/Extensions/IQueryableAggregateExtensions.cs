@@ -12,11 +12,11 @@
             var selectQueryMethod = converter.GetType()
                 .GetMethod(nameof(BaseAggregateConverter<TEntity>.GetAggregatedByColumnQuery))
                 ?.MakeGenericMethod(targetType);
-            var newQuery = selectQueryMethod.Invoke(converter, new object[] { query, aggregation });
+            var newQuery = selectQueryMethod?.Invoke(converter, new object[] { query, aggregation });
             var aggregateMethod = converter.GetType()
                 .GetMethod(nameof(BaseAggregateConverter<TEntity>.Aggregate))
                 ?.MakeGenericMethod(targetType);
-            var expression = aggregateMethod.Invoke(converter, new object[] { newQuery, aggregation }) as Expression;
+            var expression = aggregateMethod?.Invoke(converter, new object[] { newQuery, aggregation }) as Expression;
             return query.Provider.Execute(expression);
         }
     }

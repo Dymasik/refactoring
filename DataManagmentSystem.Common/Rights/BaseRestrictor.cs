@@ -19,7 +19,7 @@ namespace DataManagmentSystem.Common.Rights
 		where TRestrictionAttribute : BaseRestrictionAttribute
 	{
 
-		public BaseRestrictor(IUserDataAccessor userDataAccessor) {
+		protected BaseRestrictor(IUserDataAccessor userDataAccessor) {
             _user = GetCurrentUserInfo(userDataAccessor);
 			_userDataAccessor = userDataAccessor;
         }
@@ -36,9 +36,6 @@ namespace DataManagmentSystem.Common.Rights
 		private async Task<UserModel> GetCurrentUserInfoAsync(IUserDataAccessor userDataAccessor) {
 			try {
 				return await userDataAccessor.GetCurrentUserInfo();
-			} catch (UnauthorizedAccessException e) {
-				//ToDo: log exception
-				return null;
 			} catch (AggregateException ae) {
                 ae.Handle(e => {
                     return e is UnauthorizedAccessException;
@@ -51,7 +48,7 @@ namespace DataManagmentSystem.Common.Rights
 			return GetCurrentUserInfoAsync(userDataAccessor).Result;
 		}
 		
-		private IUserDataAccessor _userDataAccessor;
+		private readonly IUserDataAccessor _userDataAccessor;
 		protected UserModel _user { get; set; }
 
 		private MethodInfo _restrictionMethod;

@@ -2,7 +2,6 @@ namespace DataManagementSystem.Common.Audit
 {
     public static class AuditColumns
     {
-        //ToDo: rework to enum with description
         public const string ISAPPROVED_COLUMN_NAME = "IsApproved";
         public const string CREATEDBY_COLUMN_NAME = "CreatedByUserName";
         public const string CREATEDON_COLUMN_NAME = "CreatedOn";

@@ -17,8 +17,7 @@ namespace DataManagementSystem.Common
 		private static async Task<UserModel> GetCurrentUserInfo(IUserDataAccessor userDataAccessor) {
 			try {
 				return await userDataAccessor.GetCurrentUserInfo();
-			} catch (UnauthorizedAccessException e) {
-				//ToDo: log exception
+			} catch {
 				return null;
 			}
 		}
@@ -35,9 +34,7 @@ namespace DataManagementSystem.Common
 			ChangeTracker.Entries()
 				.ToList()
 				.ForEach(entityEntry => {
-					//ToDo: rework to separate service in future. 
-					//ToDo: Audit logic should depend on DbContext and use it to define if any audit needed
-					if(DataManagementSystem.Common.Audit.ChangeTracker.IsChangeTrackingEnabled(entityEntry)){
+					if (Audit.ChangeTracker.IsChangeTrackingEnabled(entityEntry)){
 						var changeTracker = new ChangeTracker(user, entityEntry, Model);
 						var changeTrackingEntity = changeTracker.CreateChangeTrackingEntity();
 						if(ChangeApprovalConfigurator.IsApprovalRequired(user, entityEntry)){

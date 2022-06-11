@@ -28,14 +28,18 @@ namespace DataManagementSystem.Common.Audit
 			return (BaseEntity)_entityType.GetProperty(foreignKeyFieldName).GetValue(_entity, null);
         }
 
-        private string GetTrackingEntityPropertyName(IProperty changeTrackingEntityProperty)
-            => !changeTrackingEntityProperty.IsBaseColumn()
-                ? changeTrackingEntityProperty.Name
-                : changeTrackingEntityProperty.Name == AuditColumns.CREATEDBY_COLUMN_NAME
-                    ? AuditColumns.MODIFIEDBY_COLUMN_NAME
-                    : changeTrackingEntityProperty.Name == AuditColumns.CREATEDON_COLUMN_NAME
-                    ? AuditColumns.MODIFIEDON_COLUMN_NAME
-                    : null;
+		private string GetTrackingEntityPropertyName(IProperty changeTrackingEntityProperty) {
+			if (!changeTrackingEntityProperty.IsBaseColumn()) {
+				return changeTrackingEntityProperty.Name;
+			} else {
+				if (changeTrackingEntityProperty.Name == AuditColumns.CREATEDBY_COLUMN_NAME) {
+					return AuditColumns.MODIFIEDBY_COLUMN_NAME;
+				} else if (changeTrackingEntityProperty.Name == AuditColumns.CREATEDON_COLUMN_NAME) {
+					return AuditColumns.MODIFIEDON_COLUMN_NAME;
+				}
+				return null;
+			}
+		}
 
 		public void ApproveChanges() {
 			var trackedEntity = GetTrackedEntity();
@@ -43,10 +47,6 @@ namespace DataManagementSystem.Common.Audit
 				throw new ForbiddenException($"User ({_user?.UserName ?? "anonymous"}) can't approve {_entityType.GetEntityTableName()} with Id = {_entity.Id}");
 			}
 
-			//ToDo: think about it:
-			//we can update entity with values only in case of edit and disallow changes of tracking entities (except IsApproved column). 
-			//This will save changes history. In current implementation approver is able to change values before approving. 
-			//By the way he (approver) is reliable for data that he approves and he won't be able to change column ModifiedBy/ModifiedOn; 
 			UpdateEntityValuesWithChangeTrackingValues(trackedEntity);
 			switch(_entity.Action){
 				case EntityAction.CREATE_ACTION:
@@ -61,7 +61,7 @@ namespace DataManagementSystem.Common.Audit
 				case EntityAction.EDIT_ACTION:
 					break;
 				default:
-					throw new Exception($"Unexpected change tracking entity action: {_entity.Action}");
+					throw new InvalidOperationException($"Unexpected change tracking entity action: {_entity.Action}");
 			}
 		}
 

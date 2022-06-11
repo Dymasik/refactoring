@@ -4,7 +4,6 @@ namespace DataManagmentSystem.Common
 	using System;
 	using Microsoft.EntityFrameworkCore;
 
-	//ToDo: rework to string values resolver
 	public enum DbProvider
 	{
 		PostgreSql = 0,
@@ -20,8 +19,6 @@ namespace DataManagmentSystem.Common
 		private const string _mssqlMigrationsAssemblyNameConfigurationKeyName = "MSSQL_MIGRATIONS_ASSEMBLY_NAME";
 		private const string _mssqlProviderName = "MSSQL";
 		private const string _postgreSqlProviderName = "PostgreSql";
-
-		//ToDo: refactor to different provider classes for each provider
 		public static DbProvider GetDbProvider(IConfiguration configuration) {
 			var dbProvider = configuration.GetValue(_dbProviderConfigurationKeyName, string.Empty);
 			switch (dbProvider) {
@@ -30,7 +27,7 @@ namespace DataManagmentSystem.Common
 				case _mssqlProviderName:
 					return DbProvider.MSSQL;
 				default:
-					throw new Exception($"Unsupported provider: {dbProvider}");
+					throw new InvalidOperationException($"Unsupported provider: {dbProvider}");
 			}
 		}
 
@@ -42,7 +39,7 @@ namespace DataManagmentSystem.Common
 				case DbProvider.MSSQL:
 					return configuration.GetValue(_mssqlMigrationsAssemblyNameConfigurationKeyName, string.Empty);
 				default:
-					throw new Exception($"Couldn't determine migrations assembly name for dbProvider: {dbProvider}");
+					throw new InvalidOperationException($"Couldn't determine migrations assembly name for dbProvider: {dbProvider}");
 			}
 		}
 
@@ -54,7 +51,7 @@ namespace DataManagmentSystem.Common
 				case DbProvider.MSSQL:
 					return configuration.GetValue(_mssqlConnectionStringConfigurationKeyName, string.Empty);
 				default:
-					throw new Exception($"Couldn't determine connection string for dbProvider: {dbProvider}");
+					throw new InvalidOperationException($"Couldn't determine connection string for dbProvider: {dbProvider}");
 			}
 		}
 
@@ -66,7 +63,7 @@ namespace DataManagmentSystem.Common
 				case DbProvider.MSSQL:
 					return optionsBuilder.UseSqlServer(GetConnectionString(configuration), x => x.MigrationsAssembly(GetMigrationsAssemblyName(configuration)));
 				default:
-					throw new Exception($"Unsupported provider: {dbProvider}");
+					throw new InvalidOperationException($"Unsupported provider: {dbProvider}");
 			}
 		}
 
@@ -80,7 +77,7 @@ namespace DataManagmentSystem.Common
 					AfterMigrationMsSql(context);
 					break;
 				default:
-					throw new Exception($"Unsupported provider: {dbProvider}");
+					throw new InvalidOperationException($"Unsupported provider: {dbProvider}");
 			}
 		}
 

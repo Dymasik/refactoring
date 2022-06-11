@@ -20,7 +20,7 @@ namespace DataManagmentSystem.Common.Extensions
                 var propertyInfo = entityType.GetProperty(orderItem.ColumnName);
                 var orderMethod = GetOrderMethod(orderItem, entityType, propertyInfo?.PropertyType, isFirstItem);
                 LambdaExpression orderSelector;
-                if (propertyInfo.IsDefined(typeof(MapToExpressionAttribute), true)) {
+                if (propertyInfo?.IsDefined(typeof(MapToExpressionAttribute), true) ?? false) {
                     var lambdaMethodName = propertyInfo.GetCustomAttribute<MapToExpressionAttribute>()
                         ?.ExpressionMethodName;
                     orderSelector = propertyInfo.ReflectedType.GetMethod(lambdaMethodName)
@@ -49,12 +49,14 @@ namespace DataManagmentSystem.Common.Extensions
             var enumarableType = typeof(System.Linq.Queryable);
             var methodName = GetOrderMethodName(orderItem.Direction, isFirstOrder);
             var method = enumarableType.GetMethods()
-                 .Where(m => m.Name == methodName && m.IsGenericMethodDefinition)
-                 .Where(m =>
-                 {
-                     var parameters = m.GetParameters().ToList();
-                     return parameters.Count == 2;
-                 }).Single();
+                 .Single(m => {
+                     if (m.Name == methodName && m.IsGenericMethodDefinition) {
+                         var parameters = m.GetParameters().ToList();
+                         return parameters.Count == 2;
+                     } else {
+                         return false;
+                     }
+                 });
             return method.MakeGenericMethod(entityType, propertyType);
         }
 

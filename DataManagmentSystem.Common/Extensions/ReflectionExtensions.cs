@@ -94,6 +94,10 @@ namespace DataManagmentSystem.Common.Extensions
 			}
 			return null;
 		}
+		public static string GetCaption(this Type type, IStringLocalizer stringLocalizer) {
+			var displayAttribute = type.GetCustomAttribute<DisplayAttribute>();
+			return displayAttribute != null ? stringLocalizer.GetString(displayAttribute.Name).Value : type.GetEntityTableName();
+		}
 		public static string GetCaption(this PropertyInfo propertyInfo, IStringLocalizer stringLocalizer) {
 			var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
 			return displayAttribute != null ? stringLocalizer.GetString(displayAttribute.Name).Value : propertyInfo.Name;
@@ -257,11 +261,17 @@ namespace DataManagmentSystem.Common.Extensions
 		}
 
 		public static int GetNumberFieldPrecision(this PropertyInfo propertyInfo) {
-			return (propertyInfo.GetCustomAttribute(typeof(PrecisionAttribute)) as PrecisionAttribute)?.Value ??
-				(propertyInfo.PropertyType.Equals(typeof(double)) ? 14
-				: propertyInfo.PropertyType.Equals(typeof(float)) ? 6
-				: propertyInfo.PropertyType.Equals(typeof(decimal)) ? 28
-				: -1);
+			var value = (propertyInfo.GetCustomAttribute(typeof(PrecisionAttribute)) as PrecisionAttribute)?.Value;
+			if (value.HasValue) {
+				return value.Value;
+			} else {
+				if (propertyInfo.PropertyType.Equals(typeof(double)))
+					return 14;
+				else if (propertyInfo.PropertyType.Equals(typeof(float)))
+					return 6;
+				else
+					return propertyInfo.PropertyType.Equals(typeof(decimal)) ? 28 : -1;
+			}
 		}
 		public static int GetNumberFieldScale(this PropertyInfo propertyInfo) {
 			return (propertyInfo.GetCustomAttribute(typeof(ScaleAttribute)) as ScaleAttribute)?.Value ?? -1;
@@ -272,10 +282,6 @@ namespace DataManagmentSystem.Common.Extensions
 		}
 		public static string GetEntityTableName(this Type type) {
 			return (type.GetCustomAttribute(typeof(TableAttribute)) as TableAttribute).Name;
-		}
-		public static string GetCaption(this Type type, IStringLocalizer stringLocalizer) {
-			var displayAttribute = type.GetCustomAttribute<DisplayAttribute>();
-			return displayAttribute != null ? stringLocalizer.GetString(displayAttribute.Name).Value : type.GetEntityTableName();
 		}
 	}
 }

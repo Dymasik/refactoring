@@ -18,9 +18,9 @@
     public class BaseFilterToExpressionConverter : IFilterToExpressionConverter {
 
         private bool _canSkipLocalization;
-        private IEnumerable<IMacrosValueProvider> _macrosValueProviders;
+        private readonly IEnumerable<IMacrosValueProvider> _macrosValueProviders;
         private readonly IEnumerable<IFunctionToExpressionConverter> _functionToExpressionConverters;
-        private IEnumerable<IFilterExpressionBuilder> _filterBuilders;
+        private readonly IEnumerable<IFilterExpressionBuilder> _filterBuilders;
         public const char SEPARATOR = '.';
         public const string LOCALIZATIONS_PROP_NAME = "Localizations";
 
@@ -94,7 +94,7 @@
                         return anyExpression;
                     }
                 }
-                if (property.IsDefined(typeof(LocalizedAttribute), true) && !_canSkipLocalization) {
+                if ((property?.IsDefined(typeof(LocalizedAttribute), true) ?? false) && !_canSkipLocalization) {
                     return ConvertNodeExpressionToExpression(new RequestFilterExpression {
                         ColumnPath = $"{filter.ColumnPath.Split(property.Name).First()}{LOCALIZATIONS_PROP_NAME}.{property.Name}",
                         Value = filter.Value,
@@ -126,7 +126,7 @@
             if (macrosValue != null) {
                 value = macrosValue;
             }
-            if (value != null && typeof(IList).IsAssignableFrom(value.GetType())) {
+            if (value != null && value.GetType() is IList) {
                 var typedList = new List<object>();
                 foreach (var singleValue in (value as IEnumerable<object>)) {
                     typedList.Add(GetTypedSingleValue(singleValue, type));
@@ -177,7 +177,7 @@
         }
 
         private Expression ConvertFilterToExpression(RequestFilter filter, ParameterExpression parameter, Type type) {
-            Expression expression = Expression.Constant(filter.LogicalOperator == FilterLogicalOperator.AND ? true : false);
+            Expression expression = Expression.Constant(filter.LogicalOperator == FilterLogicalOperator.AND);
             if (filter?.IsEmpty ?? true) {
                 return expression;
             }

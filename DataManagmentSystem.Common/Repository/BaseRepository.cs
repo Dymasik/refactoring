@@ -27,7 +27,7 @@
 
 		protected readonly TContext _context;
 		private readonly IUserDataAccessor _userDataAccessor;
-		private IMediator _mediator;
+		private readonly IMediator _mediator;
 
 		protected IObjectLocalizer Localizer { get; }
 		protected ILocalizationEntityResolver LocalizeResolver { get; }
@@ -61,7 +61,6 @@
 		}
 
 		public async Task<TEntity> AddEntity(TEntity entity) {
-			//ToDo: restrict changes of base columns
 			bool canInsert = await OnInserting(entity);
 			if (!canInsert) {
 				throw new ForbiddenException();
@@ -75,7 +74,7 @@
 			return await Localizer.Localize(entity);
 		}
 
-		public async Task<TEntity> DeleteEntity(TEntity entity, bool usePhysicalDeletion = false) {
+		public async Task<TEntity> DeleteEntity(TEntity entity, bool usePhysicalDeletion) {
 			var canDelete = await OnDeleting(entity);
 			if (!canDelete) {
 				throw new ForbiddenException();
@@ -90,9 +89,9 @@
 			return await Localizer.Localize(entity);
 		}
 
-		public async Task<IEnumerable<TEntity>> DeleteEntities<TQueryRecordsRestrictionAttribute>(RequestFilter filters, bool canSkipLocalization, bool usePhysicalDeletion = false, bool ignoreDeletedRecords = true)
+		public async Task<IEnumerable<TEntity>> DeleteEntities<TQueryRecordsRestrictionAttribute>(RequestFilter filters, bool canSkipLocalization, bool usePhysicalDeletion, bool ignoreDeletedRecords)
 			where TQueryRecordsRestrictionAttribute : BaseQueryRecordsRestrictionAttribute {
-			var query = await _context
+			var query = _context
 				.Set<TEntity>()
 				.Where<TEntity, AllowDeletingRecordsAttribute>(filters, FilterConverter, _userDataAccessor, canSkipLocalization, ignoreDeletedRecords);
 			var entities = await query.AsQueryable()
@@ -120,7 +119,7 @@
 
 		public async Task<IEnumerable<TEntity>> GetEntities<TQueryRecordsRestrictionAttribute>(GetEntitiesOptions options)
 		where TQueryRecordsRestrictionAttribute : BaseQueryRecordsRestrictionAttribute {
-			var query = await _context
+			var query = _context
 				.Set<TEntity>()
 				.AsQueryable()
 				.Where<TEntity, TQueryRecordsRestrictionAttribute>(options.Filters, FilterConverter, _userDataAccessor, options.CanSkipLocalization, options.IgnoreDeletedRecords);
@@ -139,18 +138,17 @@
 			return await query.ToListAsyncSafe();
 		}
 
-		public async Task<object> GetAggregation<TQueryRecordsRestrictionAttribute>(AggregationItem aggregation, RequestFilter filters, bool canSkipLocalization, bool ignoreDeletedRecords)
+		public Task<object> GetAggregation<TQueryRecordsRestrictionAttribute>(AggregationItem aggregation, RequestFilter filters, bool canSkipLocalization, bool ignoreDeletedRecords)
 			where TQueryRecordsRestrictionAttribute : BaseQueryRecordsRestrictionAttribute {
-			var query = await _context
+			var query = _context
 				.Set<TEntity>()
 				.Where<TEntity, AllowReadingRecordsAttribute>(filters, FilterConverter, _userDataAccessor, canSkipLocalization, ignoreDeletedRecords);
-			return query.Aggregate(aggregation);
+			return Task.FromResult(query.Aggregate(aggregation));
 		}
 
 		public async Task<TEntity> UpdateEntity(TEntity entity) {
 			var entry = _context.Entry(entity);
 			var originalEntity = (TEntity)entry.OriginalValues.ToObject();
-			//ToDo: restrict changes of base columns
 			var canUpdate = await OnUpdating(originalEntity, entity);
 			if (!canUpdate) {
 				throw new ForbiddenException();
@@ -172,15 +170,12 @@
 		}
 
 		public virtual async Task<bool> OnInserting(TEntity entity) {
-            //ToDo: refactor
-            //ToDo: think about logic of common event processor
 			try {
-				//ToDo: process errors
 				(bool canInsertBasedOnEntityEventHandler, Dictionary<string, string> errors) = await _mediator.Send(new EntityInsertingEvent<TEntity> {
 					Entity = entity
 				});
                 return canInsertBasedOnEntityEventHandler;
-			} catch (InvalidOperationException e) {
+			} catch {
     			return await Task.FromResult<bool>(true);
 			}
 		}
@@ -196,16 +191,13 @@
 		}
 
 		public virtual async Task<bool> OnUpdating(TEntity originalEntity, TEntity entity) {
-            //ToDo: refactor
-            //ToDo: think about logic of common event processor
 			try {
-				//ToDo: process errors
 				(bool canUpdateBasedOnEntityEventHandler, Dictionary<string, string> errors) = await _mediator.Send(new EntityUpdatingEvent<TEntity> {
 					OriginalEntity = originalEntity,
 					Entity = entity
 				});
                 return canUpdateBasedOnEntityEventHandler;
-			} catch (InvalidOperationException e) {
+			} catch {
     			return await Task.FromResult<bool>(true);
 			}
 		}
@@ -223,15 +215,12 @@
 		}
 
 		public virtual async Task<bool> OnDeleting(TEntity entity) {
-            //ToDo: refactor
-            //ToDo: think about logic of common event processor
 			try {
-				//ToDo: process errors
 				(bool canDeleteBasedOnEntityEventHandler, Dictionary<string, string> errors) = await _mediator.Send(new EntityInsertingEvent<TEntity> {
 					Entity = entity
 				});
                 return canDeleteBasedOnEntityEventHandler;
-			} catch (InvalidOperationException e) {
+			} catch {
     			return await Task.FromResult<bool>(true);
 			}
 		}

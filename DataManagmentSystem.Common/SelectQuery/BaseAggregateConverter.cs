@@ -21,7 +21,7 @@
             var targetMethod = typeof(Queryable).GetMethods().FirstOrDefault(
                     m => m.Name == item.Type.ToString()
                         && m.GetParameters().Length == 1
-                        && m.GetParameters()[0].ParameterType.IsAssignableFrom(query.GetType()));
+                        && m.GetParameters()[0].ParameterType.IsInstanceOfType(query));
             if (targetMethod == null) {
                 targetMethod = typeof(Queryable).GetMethods().First(
                     m => m.Name == item.Type.ToString()

@@ -49,12 +49,11 @@ namespace DataManagementSystem.Common.Audit
             if(string.IsNullOrEmpty(action)){
                 return false;
             }
-            return (Attribute.GetCustomAttribute(entityEntry.Entity.GetType(), typeof(ChangeTrackingStoreAttribute)) as ChangeTrackingStoreAttribute) != null;
+            return Attribute.GetCustomAttribute(entityEntry.Entity.GetType(), typeof(ChangeTrackingStoreAttribute)) is ChangeTrackingStoreAttribute;
         }
 
         private static bool IsEntityDeleted(EntityEntry entityEntry){
             var deletedFlagProperty = entityEntry.CurrentValues.Properties.FirstOrDefault(property => property.Name == AuditColumns.IS_DELETED_COLUMN_NAME);
-			bool isEntityRestored = !(bool)entityEntry.CurrentValues[deletedFlagProperty] && (bool)entityEntry.OriginalValues[deletedFlagProperty];
 			return entityEntry.State == EntityState.Deleted || ((bool)entityEntry.CurrentValues[deletedFlagProperty] && !(bool)entityEntry.OriginalValues[deletedFlagProperty]);
         }
 

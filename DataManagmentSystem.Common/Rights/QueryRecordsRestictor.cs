@@ -22,7 +22,7 @@ namespace DataManagmentSystem.Common.Rights
 			_filterToExpressionConverter = filterConverter;
 		}
 
-		private IFilterToExpressionConverter _filterToExpressionConverter;
+		private readonly IFilterToExpressionConverter _filterToExpressionConverter;
 
 		public RequestFilter ApplyRightsRestrictionsForFilters(RequestFilter filter) {
 			if (RestrictionMethod.ReturnType == typeof(RequestFilter)) {
