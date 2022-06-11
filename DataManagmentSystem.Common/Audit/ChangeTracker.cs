@@ -5,21 +5,17 @@ namespace DataManagementSystem.Common.Audit
 	using DataManagmentSystem.Common.Attributes;
 	using System.Linq;
 	using System;
-	using DataManagmentSystem.Auth.Injector.User;
 	using Microsoft.EntityFrameworkCore.ChangeTracking;
 	using Microsoft.EntityFrameworkCore.Metadata;
 	using DataManagmentSystem.Common.Extensions;
 
 	public class ChangeTracker
 	{
-		private readonly UserModel _user;
         private readonly EntityEntry _entityEntry;
         private BaseEntity _entity => (BaseEntity)_entityEntry.Entity;
         private Type _entityType => _entity.GetType();
-        private readonly Type _objectType;
         private readonly IModel _model;
-		public ChangeTracker(UserModel user, EntityEntry entityEntry, IModel model) {
-			_user = user;
+		public ChangeTracker(EntityEntry entityEntry, IModel model) {
             _entityEntry = entityEntry;
             _model = model;
 		}

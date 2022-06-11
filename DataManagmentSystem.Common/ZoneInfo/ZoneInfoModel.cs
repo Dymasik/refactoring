@@ -39,7 +39,7 @@ namespace DataManagmentSystem.Common.ZoneInfo
 				StandardName = timeZoneInfo.StandardName;
 				SupportsDaylightSavingTime = timeZoneInfo.SupportsDaylightSavingTime;
 			} catch(TimeZoneNotFoundException e){
-				logger.LogError(e, $"Time zone {id} was not found using TZConvert");
+				logger.LogError(e, "Time zone {id} was not found using TZConvert", id);
 			}
 		}
 	}

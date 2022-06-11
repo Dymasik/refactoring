@@ -28,7 +28,7 @@ namespace DataManagementSystem.Common.Audit
 			return (BaseEntity)_entityType.GetProperty(foreignKeyFieldName).GetValue(_entity, null);
         }
 
-		private string GetTrackingEntityPropertyName(IProperty changeTrackingEntityProperty) {
+		private static string GetTrackingEntityPropertyName(IProperty changeTrackingEntityProperty) {
 			if (!changeTrackingEntityProperty.IsBaseColumn()) {
 				return changeTrackingEntityProperty.Name;
 			} else {

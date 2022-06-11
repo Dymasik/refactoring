@@ -87,7 +87,7 @@
                     if (includedColumns != null && propertyIncludedColumns != null) {
                         includedColumns = includedColumns.Concat(propertyIncludedColumns);
                     } else {
-                        includedColumns = includedColumns != null ? includedColumns : propertyIncludedColumns;
+                        includedColumns ??= propertyIncludedColumns;
                     }
                 }
             }
@@ -110,15 +110,13 @@
                 if (includedColumns != null && restrictionIncludedColumns != null) {
                     includedColumns = includedColumns.Concat(restrictionIncludedColumns);
                 } else {
-                    includedColumns = includedColumns != null
-                        ? includedColumns
-                        : restrictionIncludedColumns;
+                    includedColumns ??= restrictionIncludedColumns;
                 }
             }
             return includedColumns;
         }
 
-        private void AddIncludedColumns(SelectColumn columns, IEnumerable<string> includedColumns)
+        private static void AddIncludedColumns(SelectColumn columns, IEnumerable<string> includedColumns)
         {
             if (includedColumns != null && includedColumns.Any())
             {
@@ -166,8 +164,8 @@
                         : property.PropertyType;
                     var currentPropertyParameter = Expression.Property(parameter, property.Name);
                     var typeParameter = Expression.Parameter(memberType);
-                    Expression memberInitParameter = null;
-                    if(isEnumerationProperty){
+                    Expression memberInitParameter;
+                    if (isEnumerationProperty){
                         memberInitParameter = typeParameter;
                     } else {
                         memberInitParameter = currentPropertyParameter;
@@ -188,7 +186,7 @@
 
         private PropertyInfo GetLocalizationProperty(Type type)
         {
-            PropertyInfo property = null;
+            PropertyInfo property;
             try {
                 property = PropertyCache.GetPropertyByName(type, LOCALIZATIONS_PROPERTY_NAME);
             } catch {
@@ -197,7 +195,7 @@
             return property;
         }
 
-        private bool CanConvertProperty(PropertyInfo property)
+        private static bool CanConvertProperty(PropertyInfo property)
         {
             if (property == null)
             {
@@ -233,7 +231,7 @@
             }
         }
 
-        private Expression GetReferenceEntityAssigningExpression(Expression memberParameter, Expression memberInit, LambdaExpression restrictionExpression, bool ignoreDeletedRecords)
+        private static Expression GetReferenceEntityAssigningExpression(Expression memberParameter, Expression memberInit, LambdaExpression restrictionExpression, bool ignoreDeletedRecords)
         {
             var nullExpression = Expression.Constant(null, memberParameter.Type);
             var condition = Expression.MakeBinary(ExpressionType.NotEqual, memberParameter, nullExpression);
@@ -248,7 +246,7 @@
             return Expression.Condition(condition, memberInit, nullExpression);
         }
 
-        private Expression GetNotDeletedRecordsExpression(Expression memberParameter)
+        private static Expression GetNotDeletedRecordsExpression(Expression memberParameter)
         {
             Expression<Func<BaseEntity, bool>> exp = entity => !entity.IsDeleted;
             return exp.Body.ReplaceParameter(exp.Parameters.Single(), memberParameter);
@@ -265,7 +263,7 @@
             whereExpression = predicate != null ? Expression.Call(typeof(Enumerable), nameof(Enumerable.Where), new[] { type },
                 whereExpression, predicate) : whereExpression;
             var selectExpression = Expression.Call(typeof(Enumerable), nameof(Enumerable.Select), new[] { type, type },
-                whereExpression != null ? whereExpression : parentParameter, Expression.Lambda(memberInit, memberParameter));
+                whereExpression ?? parentParameter, Expression.Lambda(memberInit, memberParameter));
             return Expression.Call(typeof(Enumerable), nameof(Enumerable.ToList), new[] { type }, selectExpression);
         }
 

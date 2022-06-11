@@ -21,7 +21,6 @@ namespace DataManagmentSystem.Common.Rights
 
 		protected BaseRestrictor(IUserDataAccessor userDataAccessor) {
             _user = GetCurrentUserInfo(userDataAccessor);
-			_userDataAccessor = userDataAccessor;
         }
 
 		public bool IsRestricted() =>
@@ -33,7 +32,7 @@ namespace DataManagmentSystem.Common.Rights
 		protected virtual IEnumerable<TRestrictionAttribute> GetRestrictionAttributes(MethodInfo method) 
 			=> method.GetCustomAttributes<TRestrictionAttribute>(true);
 
-		private async Task<UserModel> GetCurrentUserInfoAsync(IUserDataAccessor userDataAccessor) {
+		private static async Task<UserModel> GetCurrentUserInfoAsync(IUserDataAccessor userDataAccessor) {
 			try {
 				return await userDataAccessor.GetCurrentUserInfo();
 			} catch (AggregateException ae) {
@@ -44,11 +43,10 @@ namespace DataManagmentSystem.Common.Rights
             }
 		}
 
-		private UserModel GetCurrentUserInfo(IUserDataAccessor userDataAccessor) {
+		private static UserModel GetCurrentUserInfo(IUserDataAccessor userDataAccessor) {
 			return GetCurrentUserInfoAsync(userDataAccessor).Result;
 		}
 		
-		private readonly IUserDataAccessor _userDataAccessor;
 		protected UserModel _user { get; set; }
 
 		private MethodInfo _restrictionMethod;

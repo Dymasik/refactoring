@@ -12,7 +12,7 @@
             return Expression.MakeBinary(binaryType, currentExpression, valueExpression);
         }
 
-        private ExpressionType GetExpressionType(FilterType type) {
+        private static ExpressionType GetExpressionType(FilterType type) {
             return (ExpressionType) Enum.Parse(typeof(ExpressionType), type.ToString());
         }
     }

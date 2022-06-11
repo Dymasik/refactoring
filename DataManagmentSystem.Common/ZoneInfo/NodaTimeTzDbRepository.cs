@@ -14,7 +14,7 @@ namespace DataManagmentSystem.Common.ZoneInfo
 
 		private readonly ILogger<NodaTimeTzDbRepository> _logger;
 
-		private ReadOnlyCollection<string> _tzDbIds => DateTimeZoneProviders.Tzdb.Ids;
+		private static ReadOnlyCollection<string> _tzDbIds => DateTimeZoneProviders.Tzdb.Ids;
 
 		public NodaTimeTzDbRepository(ILogger<NodaTimeTzDbRepository> logger) {
 			_logger = logger;

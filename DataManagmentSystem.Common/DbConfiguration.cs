@@ -12,60 +12,52 @@ namespace DataManagmentSystem.Common
 
 	public static class DbConfiguration
 	{
-		private const string _dbProviderConfigurationKeyName = "DBProvider";
-		private const string _postgreSqlConnectionStringConfigurationKeyName = "dbPostgreSql";
-		private const string _mssqlConnectionStringConfigurationKeyName = "dbMSSQL";
-		private const string _postgreSqlMigrationsAssemblyNameConfigurationKeyName = "POSTGRESQL_MIGRATIONS_ASSEMBLY_NAME";
-		private const string _mssqlMigrationsAssemblyNameConfigurationKeyName = "MSSQL_MIGRATIONS_ASSEMBLY_NAME";
-		private const string _mssqlProviderName = "MSSQL";
-		private const string _postgreSqlProviderName = "PostgreSql";
+		private const string DbProviderConfigurationKeyName = "DBProvider";
+		private const string PostgreSqlConnectionStringConfigurationKeyName = "dbPostgreSql";
+		private const string MssqlConnectionStringConfigurationKeyName = "dbMSSQL";
+		private const string PostgreSqlMigrationsAssemblyNameConfigurationKeyName = "POSTGRESQL_MIGRATIONS_ASSEMBLY_NAME";
+		private const string MssqlMigrationsAssemblyNameConfigurationKeyName = "MSSQL_MIGRATIONS_ASSEMBLY_NAME";
+		private const string MssqlProviderName = "MSSQL";
+		private const string PostgreSqlProviderName = "PostgreSql";
 		public static DbProvider GetDbProvider(IConfiguration configuration) {
-			var dbProvider = configuration.GetValue(_dbProviderConfigurationKeyName, string.Empty);
-			switch (dbProvider) {
-				case _postgreSqlProviderName:
-					return DbProvider.PostgreSql;
-				case _mssqlProviderName:
-					return DbProvider.MSSQL;
-				default:
-					throw new InvalidOperationException($"Unsupported provider: {dbProvider}");
-			}
-		}
+			var dbProvider = configuration.GetValue(DbProviderConfigurationKeyName, string.Empty);
+            return dbProvider switch
+            {
+                PostgreSqlProviderName => DbProvider.PostgreSql,
+                MssqlProviderName => DbProvider.MSSQL,
+                _ => throw new InvalidOperationException($"Unsupported provider: {dbProvider}"),
+            };
+        }
 
 		public static string GetMigrationsAssemblyName(IConfiguration configuration) {
 			var dbProvider = GetDbProvider(configuration);
-			switch (dbProvider) {
-				case DbProvider.PostgreSql:
-					return configuration.GetValue(_postgreSqlMigrationsAssemblyNameConfigurationKeyName, string.Empty);
-				case DbProvider.MSSQL:
-					return configuration.GetValue(_mssqlMigrationsAssemblyNameConfigurationKeyName, string.Empty);
-				default:
-					throw new InvalidOperationException($"Couldn't determine migrations assembly name for dbProvider: {dbProvider}");
-			}
-		}
+            return dbProvider switch
+            {
+                DbProvider.PostgreSql => configuration.GetValue(PostgreSqlMigrationsAssemblyNameConfigurationKeyName, string.Empty),
+                DbProvider.MSSQL => configuration.GetValue(MssqlMigrationsAssemblyNameConfigurationKeyName, string.Empty),
+                _ => throw new InvalidOperationException($"Couldn't determine migrations assembly name for dbProvider: {dbProvider}"),
+            };
+        }
 
 		public static string GetConnectionString(IConfiguration configuration) {
 			var dbProvider = GetDbProvider(configuration);
-			switch (dbProvider) {
-				case DbProvider.PostgreSql:
-					return configuration.GetValue(_postgreSqlConnectionStringConfigurationKeyName, string.Empty);
-				case DbProvider.MSSQL:
-					return configuration.GetValue(_mssqlConnectionStringConfigurationKeyName, string.Empty);
-				default:
-					throw new InvalidOperationException($"Couldn't determine connection string for dbProvider: {dbProvider}");
-			}
-		}
+            return dbProvider switch
+            {
+                DbProvider.PostgreSql => configuration.GetValue(PostgreSqlConnectionStringConfigurationKeyName, string.Empty),
+                DbProvider.MSSQL => configuration.GetValue(MssqlConnectionStringConfigurationKeyName, string.Empty),
+                _ => throw new InvalidOperationException($"Couldn't determine connection string for dbProvider: {dbProvider}"),
+            };
+        }
 
 		public static DbContextOptionsBuilder InitDbContextOptionsBuilder(IConfiguration configuration, DbContextOptionsBuilder optionsBuilder) {
 			var dbProvider = GetDbProvider(configuration);
-			switch (dbProvider) {
-				case DbProvider.PostgreSql:
-					return optionsBuilder.UseNpgsql(GetConnectionString(configuration), x => x.MigrationsAssembly(GetMigrationsAssemblyName(configuration)));
-				case DbProvider.MSSQL:
-					return optionsBuilder.UseSqlServer(GetConnectionString(configuration), x => x.MigrationsAssembly(GetMigrationsAssemblyName(configuration)));
-				default:
-					throw new InvalidOperationException($"Unsupported provider: {dbProvider}");
-			}
-		}
+            return dbProvider switch
+            {
+                DbProvider.PostgreSql => optionsBuilder.UseNpgsql(GetConnectionString(configuration), x => x.MigrationsAssembly(GetMigrationsAssemblyName(configuration))),
+                DbProvider.MSSQL => optionsBuilder.UseSqlServer(GetConnectionString(configuration), x => x.MigrationsAssembly(GetMigrationsAssemblyName(configuration))),
+                _ => throw new InvalidOperationException($"Unsupported provider: {dbProvider}"),
+            };
+        }
 
 		public static void AfterMigration(DbContext context, IConfiguration configuration) {
 			var dbProvider = GetDbProvider(configuration);

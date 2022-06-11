@@ -25,7 +25,7 @@
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
-            if (!(source is IAsyncEnumerable<TSource>))
+            if (source is not IAsyncEnumerable<TSource>)
                 return Task.FromResult(source.ToList());
             return source.ToListAsync();
         }

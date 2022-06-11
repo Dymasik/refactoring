@@ -6,18 +6,18 @@
     using System.Reflection;
 
     public class ContainsFilterExpressionBuilder : IFilterExpressionBuilder {
-        private readonly bool isPostgreSql;
+        private readonly bool _isPostgreSql;
         
         public string Type => FilterType.Contains.ToString();
 
         public ContainsFilterExpressionBuilder(IConfiguration configuration) {
             var provider = configuration.GetValue("DBProvider", "PostgreSql");
-            isPostgreSql = provider.Equals("PostgreSql");
+            _isPostgreSql = provider.Equals("PostgreSql");
         }
 
         public Expression GetExpression(Expression currentExpression, FilterType comparisonType, object value) {
             if (currentExpression.Type == typeof(string)) {
-                var efLikeMethod = isPostgreSql ?
+                var efLikeMethod = _isPostgreSql ?
                     typeof(NpgsqlDbFunctionsExtensions).GetMethod(nameof(NpgsqlDbFunctionsExtensions.ILike),
                         BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
                         null,

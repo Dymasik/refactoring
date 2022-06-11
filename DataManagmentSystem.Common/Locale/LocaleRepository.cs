@@ -10,7 +10,7 @@ namespace DataManagmentSystem.Common.Locale
 	public class CultureInfoLocaleRepository : ILocaleRepository
 	{
 
-		private CultureInfo[] _cultures => CultureInfo.GetCultures(CultureTypes.AllCultures);
+		private static CultureInfo[] _cultures => CultureInfo.GetCultures(CultureTypes.AllCultures);
 
 		public List<SelectListItem> GetSelectListItems() => _cultures
 			.Select(culture =>

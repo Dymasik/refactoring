@@ -14,8 +14,8 @@ namespace DataManagmentSystem.Common.Extensions
 	public static class ReflectionExtensions
 	{
 		private static List<string> _baseEntityColumnNamesCache = null;
-		private static List<string> _baseEntityColumnNames 
-			=> _baseEntityColumnNamesCache ?? (_baseEntityColumnNamesCache = typeof(BaseEntity).GetProperties().Select(property => property.Name).ToList());
+		private static List<string> _baseEntityColumnNames
+			=> _baseEntityColumnNamesCache ??= GetPropertyNames();
 		public static bool IsBaseColumn(this IProperty property) {
 			return _baseEntityColumnNames.Contains(property.Name);
 		}
@@ -180,11 +180,11 @@ namespace DataManagmentSystem.Common.Extensions
                     || propertyInfo.PropertyType.Equals(typeof(decimal));
 		}
 		public static object GetNumberFieldMinValue(this PropertyInfo propertyInfo) {
-			var rangeAttribute = propertyInfo.GetCustomAttribute(typeof(RangeAttribute)) as RangeAttribute;
-			if(rangeAttribute != null){
-				return rangeAttribute.Minimum;
-			}
-			if(propertyInfo.PropertyType.Equals(typeof(sbyte))) {
+            if (propertyInfo.GetCustomAttribute(typeof(RangeAttribute)) is RangeAttribute rangeAttribute)
+            {
+                return rangeAttribute.Minimum;
+            }
+            if (propertyInfo.PropertyType.Equals(typeof(sbyte))) {
 				return sbyte.MinValue;
 			}
 			else if(propertyInfo.PropertyType.Equals(typeof(short))) {
@@ -220,11 +220,11 @@ namespace DataManagmentSystem.Common.Extensions
 			return null;
 		}
 		public static object GetNumberFieldMaxValue(this PropertyInfo propertyInfo) {
-			var rangeAttribute = propertyInfo.GetCustomAttribute(typeof(RangeAttribute)) as RangeAttribute;
-			if(rangeAttribute != null){
-				return rangeAttribute.Maximum;
-			}
-			if(propertyInfo.PropertyType.Equals(typeof(sbyte))) {
+            if (propertyInfo.GetCustomAttribute(typeof(RangeAttribute)) is RangeAttribute rangeAttribute)
+            {
+                return rangeAttribute.Maximum;
+            }
+            if (propertyInfo.PropertyType.Equals(typeof(sbyte))) {
 				return sbyte.MaxValue;
 			}
 			else if(propertyInfo.PropertyType.Equals(typeof(short))) {
@@ -282,6 +282,10 @@ namespace DataManagmentSystem.Common.Extensions
 		}
 		public static string GetEntityTableName(this Type type) {
 			return (type.GetCustomAttribute(typeof(TableAttribute)) as TableAttribute).Name;
+		}
+
+		private static List<string> GetPropertyNames() {
+			return typeof(BaseEntity).GetProperties().Select(property => property.Name).ToList();
 		}
 	}
 }

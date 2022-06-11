@@ -56,10 +56,6 @@
 			_mediator = mediator;
 		}
 
-		protected async virtual Task<int> SaveChanges() {
-			return await _context.SaveChangesAsync();
-		}
-
 		public async Task<TEntity> AddEntity(TEntity entity) {
 			bool canInsert = await OnInserting(entity);
 			if (!canInsert) {
@@ -132,7 +128,7 @@
 			if (options.Columns != null) {
 				query = query.Select<TEntity, TQueryRecordsRestrictionAttribute>(options.Columns, SelectColumnConverter, options.CanSkipLocalization, options.IsColumnReadingRestricted, options.IgnoreDeletedRecords);
 			}
-			if (options.PageSize != default(int)) {
+			if (options.PageSize != default) {
 				query = query.Skip(options.PageSize * options.PageIndex).Take(options.PageSize);
 			}
 			return await query.ToListAsyncSafe();
@@ -233,6 +229,11 @@
                 Entity = entity
             });
 			return Task.FromResult(0);
+		}
+
+		protected virtual async Task<int> SaveChanges()
+		{
+			return await _context.SaveChangesAsync();
 		}
 	}
 }

@@ -8,7 +8,7 @@
 	{
 		private readonly IUserDataAccessor _userDataAccessor;
 		private UserModel _userModel;
-		private static readonly Regex BASE_MACROS_TEMPLATE = new Regex(@"\[#CUSTOM_USER_INFO:(?<attribute>\w+)#\]");
+		private static readonly Regex _baseMacrosTemplate = new(@"\[#CUSTOM_USER_INFO:(?<attribute>\w+)#\]");
 		private const string CUSTOM_ATTRIBUTE_TPL = "custom:{0}";
 		private string _attributeName;
 
@@ -44,7 +44,7 @@
 		}
 
 		private void InitializeCustomAttributeName(string macrosName) {
-			var match = BASE_MACROS_TEMPLATE.Match(macrosName);
+			var match = _baseMacrosTemplate.Match(macrosName);
 			if (!match.Success)
 				return;
 			var attributeName = match.Groups["attribute"]?.Value;

@@ -9,7 +9,7 @@
 
         public const char SEPARATOR = '.';
 
-        private Expression GetPropertyExpression(string columnName, Expression parameter) {
+        private static Expression GetPropertyExpression(string columnName, Expression parameter) {
             Expression property = parameter;
             foreach (var column in columnName.Split(SEPARATOR)) {
                 property = Expression.Property(parameter, column);

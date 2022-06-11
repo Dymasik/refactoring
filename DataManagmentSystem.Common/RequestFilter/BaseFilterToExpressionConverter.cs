@@ -52,7 +52,7 @@
             return Expression.Lambda<Func<TEntity, bool>>(expression, parameter);
         }
 
-        private ExpressionType GetLogicalOperator(FilterLogicalOperator @operator) {
+        private static ExpressionType GetLogicalOperator(FilterLogicalOperator @operator) {
             return @operator == FilterLogicalOperator.AND ? ExpressionType.AndAlso : ExpressionType.OrElse;
         }
 
@@ -74,9 +74,9 @@
                     if (property.IsDefined(typeof(MapToExpressionAttribute), true)) {
                         var lambdaMethodName = property.GetCustomAttribute<MapToExpressionAttribute>()
                             ?.ExpressionMethodName;
-                        var lambdaBindedToProperty = property.ReflectedType.GetMethod(lambdaMethodName)
-                            ?.Invoke(null, new object[0]) as LambdaExpression;
-                        if (lambdaBindedToProperty == null) {
+                        if (property.ReflectedType.GetMethod(lambdaMethodName)
+                            ?.Invoke(null, Array.Empty<object>()) is not LambdaExpression lambdaBindedToProperty)
+                        {
                             throw new ArgumentException($"Wrong expression descriptor for property {property.Name}");
                         }
                         currentPropertyExpression = lambdaBindedToProperty.Body.ReplaceParameter(lambdaBindedToProperty.Parameters.Single(), currentPropertyExpression);
@@ -116,7 +116,7 @@
         private Expression GetPrimitiveExpression(Expression currentPropertyExpression, RequestFilterExpression filter, Type type) {
             var value = GetTypedValue(filter.Value, type);
             var filterBuilder = _filterBuilders.SingleOrDefault(builder => builder.Type == filter.ComparisonType.ToString());
-            filterBuilder = filterBuilder ?? _filterBuilders.Single(builder => builder.Type == string.Empty);
+            filterBuilder ??= _filterBuilders.Single(builder => builder.Type == string.Empty);
             return filterBuilder.GetExpression(currentPropertyExpression, filter.ComparisonType, value);
         }
 
@@ -137,7 +137,7 @@
             }
         }
 
-        private object GetTypedSingleValue(object value, Type type) {
+        private static object GetTypedSingleValue(object value, Type type) {
             object typedValue;
             if (type.IsEquivalentTo(typeof(Guid)) || type.IsEquivalentTo(typeof(Guid?))) {
                 if (value != null && Guid.TryParse(value.ToString(), out Guid guidValue)) {

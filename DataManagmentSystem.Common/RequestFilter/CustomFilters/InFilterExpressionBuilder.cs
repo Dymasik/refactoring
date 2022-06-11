@@ -18,11 +18,11 @@
                 Expression.Constant(objectList, targetEnumerationType), currentExpression);
         }
 
-        private Type GetEnumerationType(Type type) {
+        private static Type GetEnumerationType(Type type) {
             return type.MakeArrayType();
         }
 
-        private T[] GetStrongTypedList<T>(IList<object> objectList) {
+        private static T[] GetStrongTypedList<T>(IList<object> objectList) {
             var typedObjectList = new T[objectList.Count];
             var index = 0;
             foreach (var item in objectList) {
@@ -34,7 +34,7 @@
 
         private MethodInfo GetContainsMethod(Type type) {
             return typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
-                .First(m => m.Name == nameof(Enumerable.Contains) && m.GetParameters().Count() == 2)
+                .First(m => m.Name == nameof(Enumerable.Contains) && m.GetParameters().Length == 2)
                 .MakeGenericMethod(type);
         }
     }

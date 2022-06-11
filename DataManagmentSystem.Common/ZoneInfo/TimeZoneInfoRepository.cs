@@ -10,7 +10,7 @@ namespace DataManagmentSystem.Common.ZoneInfo
 	public class TimeZoneInfoRepository : IZoneInfoRepository
 	{
 
-		private ReadOnlyCollection<TimeZoneInfo> _systemTimeZones => TimeZoneInfo.GetSystemTimeZones();
+		private static ReadOnlyCollection<TimeZoneInfo> _systemTimeZones => TimeZoneInfo.GetSystemTimeZones();
 
 		public List<SelectListItem> GetSelectListItems() {
 			return _systemTimeZones

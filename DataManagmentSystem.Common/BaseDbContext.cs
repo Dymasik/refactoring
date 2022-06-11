@@ -28,14 +28,14 @@ namespace DataManagementSystem.Common
 		public DbSet<LanguageEntity> Languages { get; set; }
         public DbSet<CurrencyEntity> Currencies { get; set; }
         public DbSet<MultiCurrencyAmountEntity> MultiCurrencyAmounts { get; set; }
-		public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+		public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) {
 			var user = await GetCurrentUserInfo(_userDataAccessor);
 
 			ChangeTracker.Entries()
 				.ToList()
 				.ForEach(entityEntry => {
 					if (Audit.ChangeTracker.IsChangeTrackingEnabled(entityEntry)){
-						var changeTracker = new ChangeTracker(user, entityEntry, Model);
+						var changeTracker = new ChangeTracker(entityEntry, Model);
 						var changeTrackingEntity = changeTracker.CreateChangeTrackingEntity();
 						if(ChangeApprovalConfigurator.IsApprovalRequired(user, entityEntry)){
 							var changeApprovalConfigurator = new ChangeApprovalConfigurator(entityEntry, changeTrackingEntity);

@@ -17,7 +17,7 @@
             return GetComparisonFunc(currentExpression, valueExpression);
         }
 
-        protected object GetDefault(Type type)
+        protected static object GetDefault(Type type)
         {
             if (type.Equals(typeof(string))) {
                 return string.Empty;

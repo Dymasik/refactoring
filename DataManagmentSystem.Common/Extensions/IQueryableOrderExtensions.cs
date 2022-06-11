@@ -24,7 +24,7 @@ namespace DataManagmentSystem.Common.Extensions
                     var lambdaMethodName = propertyInfo.GetCustomAttribute<MapToExpressionAttribute>()
                         ?.ExpressionMethodName;
                     orderSelector = propertyInfo.ReflectedType.GetMethod(lambdaMethodName)
-                        ?.Invoke(null, new object[0]) as LambdaExpression;
+                        ?.Invoke(null, Array.Empty<object>()) as LambdaExpression;
                     if (orderSelector == null) {
                         throw new ArgumentException($"Wrong expression descriptor for property {propertyInfo.Name}");
                     }
@@ -62,13 +62,11 @@ namespace DataManagmentSystem.Common.Extensions
 
         private static string GetOrderMethodName(OrderDirection direction, bool isFirstOrder)
         {
-            switch (direction)
+            return direction switch
             {
-                case OrderDirection.ASC:
-                    return isFirstOrder ? "OrderBy" : "ThenBy";
-                default:
-                    return isFirstOrder ? "OrderByDescending" : "ThenByDescending";
-            }
+                OrderDirection.ASC => isFirstOrder ? "OrderBy" : "ThenBy",
+                _ => isFirstOrder ? "OrderByDescending" : "ThenByDescending",
+            };
         }
     }
 }

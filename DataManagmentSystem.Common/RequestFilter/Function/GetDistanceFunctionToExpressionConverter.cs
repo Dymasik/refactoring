@@ -38,17 +38,16 @@ namespace DataManagmentSystem.Common.RequestFilter.Function
             }
             var columnPathChain = parameter.ColumnPath.Split(BaseFilterToExpressionConverter.SEPARATOR);
             var currentPropertyExpression = parameterExpression as Expression;
-            PropertyInfo property = null;
             var propertyType = type;
             foreach (var propertyName in columnPathChain) {
-                property = PropertyCache.GetPropertyByName(propertyType, propertyName);
+                var property = PropertyCache.GetPropertyByName(propertyType, propertyName);
                 propertyType = property.PropertyType;
                 if (property.IsDefined(typeof(MapToExpressionAttribute), true)) {
                     var lambdaMethodName = property.GetCustomAttribute<MapToExpressionAttribute>()
                         ?.ExpressionMethodName;
-                    var lambdaBindedToProperty = property.ReflectedType.GetMethod(lambdaMethodName)
-                        ?.Invoke(null, new object[0]) as LambdaExpression;
-                    if (lambdaBindedToProperty == null) {
+                    if (property.ReflectedType.GetMethod(lambdaMethodName)
+                        ?.Invoke(null, Array.Empty<object>()) is not LambdaExpression lambdaBindedToProperty)
+                    {
                         throw new ArgumentException($"Wrong expression descriptor for property {property.Name}");
                     }
                     currentPropertyExpression = lambdaBindedToProperty.Body.ReplaceParameter(lambdaBindedToProperty.Parameters.Single(), currentPropertyExpression);
